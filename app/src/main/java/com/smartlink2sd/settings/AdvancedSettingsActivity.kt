@@ -1,36 +1,142 @@
 package com.smartlink2sd.settings
 
+import android.app.Activity
 import android.os.Bundle
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
+import android.view.ViewGroup
 
-class AdvancedSettingsActivity : AppCompatActivity() {
+class AdvancedSettingsActivity : Activity() {
     private lateinit var store: SettingsStore
-    private lateinit var s: AdvancedSettings
+    private lateinit var settings: AdvancedSettings
 
-    override fun onCreate(b: Bundle?) {
-        super.onCreate(b); store=SettingsStore(this); s=store.load()
-        val box=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL; setPadding(20,20,20,20) }
-        box.addView(TextView(this).apply { text="Advanced Settings"; textSize=24f })
-        section(box,"Linking"); sw(box,"Auto Link",s.autoLink){s.autoLink=it}; sw(box,"Link APK",s.linkApk){s.linkApk=it}
-        sw(box,"Link Dex",s.linkDex){s.linkDex=it}; sw(box,"Link Lib",s.linkLib){s.linkLib=it}
-        sw(box,"Link Data",s.linkData){s.linkData=it}; sw(box,"Link OBB",s.linkObb){s.linkObb=it}
-        sw(box,"Force Link",s.forceLink){s.forceLink=it}
-        section(box,"Mount"); sw(box,"Bind Mount",s.bindMount){s.bindMount=it}; sw(box,"Symlink",s.symlink){s.symlink=it}
-        sw(box,"Boot Mount",s.bootMount){s.bootMount=it}; sw(box,"Mount Verification",s.mountVerification){s.mountVerification=it}
-        section(box,"Storage"); sw(box,"SD Detection",s.sdDetection){s.sdDetection=it}; sw(box,"Partition Detection",s.partitionDetection){s.partitionDetection=it}
-        sw(box,"Filesystem Detection",s.filesystemDetection){s.filesystemDetection=it}; sw(box,"EXT2",s.ext2){s.ext2=it}
-        sw(box,"EXT3",s.ext3){s.ext3=it}; sw(box,"EXT4",s.ext4){s.ext4=it}; sw(box,"F2FS",s.f2fs){s.f2fs=it}
-        section(box,"Protection"); sw(box,"Prevent Touch",s.preventTouch){s.preventTouch=it}; sw(box,"Prevent Links",s.preventLinks){s.preventLinks=it}
-        sw(box,"Protected Apps",s.protectedApps){s.protectedApps=it}; sw(box,"Excluded Apps",s.excludedApps){s.excludedApps=it}; sw(box,"Confirmation",s.confirmation){s.confirmation=it}
-        section(box,"Automation"); sw(box,"Auto Mount",s.autoMount){s.autoMount=it}; sw(box,"Auto Freeze",s.autoFreeze){s.autoFreeze=it}
-        sw(box,"Auto Unfreeze",s.autoUnfreeze){s.autoUnfreeze=it}; sw(box,"Auto Cache Clear",s.autoCacheClear){s.autoCacheClear=it}
-        section(box,"Recovery"); sw(box,"Verify Links",s.verifyLinks){s.verifyLinks=it}; sw(box,"Repair Links",s.repairLinks){s.repairLinks=it}
-        sw(box,"Backup Metadata",s.backupMetadata){s.backupMetadata=it}; sw(box,"Restore",s.restore){s.restore=it}; sw(box,"Rollback",s.rollback){s.rollback=it}
-        section(box,"Permissions"); sw(box,"Shizuku",s.shizukuEnabled){s.shizukuEnabled=it}; sw(box,"Island",s.islandEnabled){s.islandEnabled=it}; sw(box,"Root",s.rootEnabled){s.rootEnabled=it}
-        box.addView(Button(this).apply { text="SAVE"; setOnClickListener { store.save(s); Toast.makeText(context,"Settings saved",Toast.LENGTH_SHORT).show() } })
-        setContentView(ScrollView(this).apply{addView(box)})
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        store = SettingsStore(this)
+        settings = store.load()
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 24, 24, 24)
+        }
+
+        val scroll = ScrollView(this)
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        scroll.addView(content)
+        root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
+
+        addSection(content, "LINKING")
+        addSwitch(content, "Auto Link", settings.autoLink) { settings.autoLink = it }
+        addSwitch(content, "Link APK", settings.linkApk) { settings.linkApk = it }
+        addSwitch(content, "Link Dex", settings.linkDex) { settings.linkDex = it }
+        addSwitch(content, "Link Lib", settings.linkLib) { settings.linkLib = it }
+        addSwitch(content, "Link Data", settings.linkData) { settings.linkData = it }
+        addSwitch(content, "Link OBB", settings.linkObb) { settings.linkObb = it }
+        addSwitch(content, "Force Link", settings.forceLink) { settings.forceLink = it }
+        addSpinner(content, "Link Method", arrayOf("Automatic","Bind Mount","Symlink","Move + Link"), settings.linkMethod) {
+            settings.linkMethod = it
+        }
+
+        addSection(content, "MOUNT")
+        addSwitch(content, "Bind Mount", settings.bindMount) { settings.bindMount = it }
+        addSwitch(content, "Symlink", settings.symlink) { settings.symlink = it }
+        addEdit(content, "Mount Options", settings.mountOptions) { settings.mountOptions = it }
+        addEdit(content, "Mount Order", settings.mountOrder) { settings.mountOrder = it }
+        addSwitch(content, "Boot Mount", settings.bootMount) { settings.bootMount = it }
+        addSwitch(content, "Mount Verification", settings.mountVerification) { settings.mountVerification = it }
+
+        addSection(content, "STORAGE")
+        addSwitch(content, "SD Detection", settings.sdDetection) { settings.sdDetection = it }
+        addSwitch(content, "Partition Detection", settings.partitionDetection) { settings.partitionDetection = it }
+        addSwitch(content, "Filesystem Detection", settings.filesystemDetection) { settings.filesystemDetection = it }
+        addSwitch(content, "EXT2 / EXT3 / EXT4 / F2FS", settings.extFilesystems) { settings.extFilesystems = it }
+
+        addSection(content, "PROTECTION")
+        addSwitch(content, "Prevent Touch", settings.preventTouch) { settings.preventTouch = it }
+        addSwitch(content, "Prevent Links", settings.preventLinks) { settings.preventLinks = it }
+        addEdit(content, "Protected Apps (packages)", settings.protectedApps) { settings.protectedApps = it }
+        addEdit(content, "Excluded Apps (packages)", settings.excludedApps) { settings.excludedApps = it }
+        addEdit(content, "Excluded Paths", settings.excludedPaths) { settings.excludedPaths = it }
+        addSwitch(content, "Confirmation", settings.confirmation) { settings.confirmation = it }
+
+        addSection(content, "AUTOMATION")
+        addSwitch(content, "Auto Link", settings.autoLinkAutomation) { settings.autoLinkAutomation = it }
+        addSwitch(content, "Auto Mount", settings.autoMount) { settings.autoMount = it }
+        addSwitch(content, "Auto Freeze", settings.autoFreeze) { settings.autoFreeze = it }
+        addSwitch(content, "Auto Unfreeze", settings.autoUnfreeze) { settings.autoUnfreeze = it }
+        addSwitch(content, "Auto Cache Clear", settings.autoCacheClear) { settings.autoCacheClear = it }
+
+        addSection(content, "RECOVERY")
+        addSwitch(content, "Verify Links", settings.verifyLinks) { settings.verifyLinks = it }
+        addSwitch(content, "Repair Links", settings.repairLinks) { settings.repairLinks = it }
+        addSwitch(content, "Backup Metadata", settings.backupMetadata) { settings.backupMetadata = it }
+        addSwitch(content, "Restore", settings.restore) { settings.restore = it }
+        addSwitch(content, "Rollback", settings.rollback) { settings.rollback = it }
+
+        addSection(content, "PERMISSIONS / BACKEND")
+        addSwitch(content, "Shizuku", settings.shizuku) { settings.shizuku = it }
+        addSwitch(content, "Island", settings.island) { settings.island = it }
+        addSwitch(content, "Root", settings.root) { settings.root = it }
+        addSpinner(content, "Backend Selection",
+            arrayOf("Automatic","Shizuku","Island","Root","Android Native"),
+            settings.backendSelection) { settings.backendSelection = it }
+
+        val save = Button(this).apply {
+            text = "SAVE SETTINGS"
+            setOnClickListener {
+                store.save(settings)
+                Toast.makeText(this@AdvancedSettingsActivity, "Settings saved", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+        root.addView(save, LinearLayout.LayoutParams(-1, -2))
+        setContentView(root)
     }
-    private fun section(v:LinearLayout,t:String){v.addView(TextView(this).apply{text=t;textSize=18f;setPadding(0,18,0,4)})}
-    private fun sw(v:LinearLayout,t:String,c:Boolean=false,f:(Boolean)->Unit){v.addView(Switch(this).apply{text=t;isChecked=c;setOnCheckedChangeListener{_,x->f(x)}})}
+
+    private fun addSection(parent: LinearLayout, title: String) {
+        val tv = TextView(this).apply {
+            text = title
+            textSize = 16f
+            setTextColor(Color.DKGRAY)
+            setPadding(0, 28, 0, 8)
+        }
+        parent.addView(tv)
+    }
+
+    private fun addSwitch(parent: LinearLayout, title: String, checked: Boolean, onChange: (Boolean)->Unit) {
+        val sw = Switch(this).apply {
+            text = title
+            isChecked = checked
+            setOnCheckedChangeListener { _, value -> onChange(value) }
+        }
+        parent.addView(sw, LinearLayout.LayoutParams(-1, -2))
+    }
+
+    private fun addEdit(parent: LinearLayout, hint: String, value: String, onChange: (String)->Unit) {
+        val e = EditText(this).apply {
+            this.hint = hint
+            setText(value)
+            setSingleLine(false)
+            setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) onChange(text.toString()) }
+        }
+        parent.addView(e, LinearLayout.LayoutParams(-1, -2))
+    }
+
+    private fun addSpinner(parent: LinearLayout, title: String, items: Array<String>, selected: String, onChange: (String)->Unit) {
+        val label = TextView(this).apply { text = title }
+        parent.addView(label)
+        val spinner = Spinner(this)
+        spinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, items)
+        val index = items.indexOf(selected).coerceAtLeast(0)
+        spinner.setSelection(index)
+        spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: android.widget.AdapterView<*>?, v: android.view.View?, position: Int, id: Long) {
+                onChange(items[position])
+            }
+            override fun onNothingSelected(p: android.widget.AdapterView<*>?) {}
+        }
+        parent.addView(spinner)
+    }
 }

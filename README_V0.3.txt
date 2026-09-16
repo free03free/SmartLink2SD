@@ -1,0 +1,1 @@
+V0.3: exposes all advanced settings in the Advanced Settings UI. No settings are removed.\n
