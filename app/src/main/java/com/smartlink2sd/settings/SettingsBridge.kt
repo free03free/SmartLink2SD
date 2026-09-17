@@ -15,6 +15,6 @@ class SettingsBridge(private val store: SettingsStore) {
     fun selectedBackend(): String = current().backendSelection
     fun linkMethod(): String = current().linkMethod
     fun mountOptions(): String = current().mountOptions
-    fun mountOrder(): String = current().mountOrder
+    fun mountOrder(): Int = current().mountOrder
     fun excludedPaths(): String = current().excludedPaths
 }
