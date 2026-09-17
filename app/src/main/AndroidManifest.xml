@@ -9,6 +9,7 @@
         android:label="SmartLink2SD"
         android:supportsRtl="true" android:theme="@style/Theme.SmartLink2SD">
         <activity android:name=".settings.AdvancedSettingsActivity" />
+        <activity android:name=".settings.PermissionCenterActivity" />
         <activity android:name=".ui.AppDetailsActivity" />
         <activity
             android:name=".MainActivity"

@@ -3,6 +3,7 @@ package com.smartlink2sd
 import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +23,9 @@ class MainActivity : AppCompatActivity() {
 
         val recycler = findViewById<RecyclerView>(R.id.appList)
         val search = findViewById<EditText>(R.id.searchBox)
+        findViewById<ImageButton>(R.id.menuButton).setOnClickListener {
+            startActivity(Intent(this, com.smartlink2sd.settings.PermissionCenterActivity::class.java))
+        }
 
         adapter = AppListAdapter(
             emptyList(),

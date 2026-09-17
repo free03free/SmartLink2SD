@@ -22,11 +22,13 @@ object OperationPolicy {
             return Decision(false, "Link operations are disabled by Prevent Links.")
         }
 
-        if (settings.excludedApps.split(",")
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-                .contains(packageName)
-        ) {
+        /*
+         * excludedApps is a Boolean setting in the canonical model.
+         * The actual exclusion list is intentionally not inferred from it.
+         * Future package-level exclusion logic can be added without removing
+         * or changing the existing setting.
+         */
+        if (settings.excludedApps && isExcludedByPathPolicy(settings, packageName)) {
             return Decision(false, "Application is excluded.")
         }
 
@@ -53,15 +55,30 @@ object OperationPolicy {
         }
     }
 
-    private fun componentAllowed(settings: AdvancedSettings, component: String): Boolean {
+    private fun componentAllowed(
+        settings: AdvancedSettings,
+        component: String
+    ): Boolean {
         return when (component.lowercase()) {
             "apk" -> settings.linkApk
             "dex" -> settings.linkDex
             "lib" -> settings.linkLib
             "data" -> settings.linkData
             "obb" -> settings.linkObb
-            "external_data" -> settings.linkExternalData
+            "external_data" -> settings.linkData
             else -> false
         }
+    }
+
+    private fun isExcludedByPathPolicy(
+        settings: AdvancedSettings,
+        packageName: String
+    ): Boolean {
+        val excludedPaths = settings.excludedPaths
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+
+        return excludedPaths.any { packageName == it }
     }
 }
