@@ -1,0 +1,55 @@
+package com.smartlink2sd.engine
+
+import java.io.File
+
+class FileOperationManager {
+
+    fun copy(source: File, target: File): Boolean {
+        if (!source.exists()) return false
+
+        return runCatching {
+            if (source.isDirectory) {
+                copyDirectory(source, target)
+            } else {
+                target.parentFile?.mkdirs()
+                source.copyTo(target, overwrite = true)
+            }
+            true
+        }.getOrDefault(false)
+    }
+
+    fun move(source: File, target: File): Boolean {
+        if (!source.exists()) return false
+
+        return runCatching {
+            target.parentFile?.mkdirs()
+
+            if (source.renameTo(target)) {
+                true
+            } else {
+                if (!copy(source, target)) {
+                    false
+                } else {
+                    if (!source.deleteRecursively()) false else true
+                }
+            }
+        }.getOrDefault(false)
+    }
+
+    private fun copyDirectory(source: File, target: File) {
+        if (!target.exists() && !target.mkdirs()) {
+            error("Unable to create target directory.")
+        }
+
+        source.listFiles()?.forEach { child ->
+            val destination = File(target, child.name)
+
+            if (child.isDirectory) {
+                copyDirectory(child, destination)
+            } else {
+                destination.parentFile?.mkdirs()
+                child.copyTo(destination, overwrite = true)
+            }
+        }
+    }
+}
