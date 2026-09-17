@@ -3,16 +3,11 @@ package com.smartlink2sd.backend
 import android.content.Context
 import com.smartlink2sd.settings.SettingsBridge
 
-/**
- * V0.5 capability layer.
- *
- * It intentionally performs conservative detection. A backend is not reported as
- * operational merely because an app/package exists.
- */
 class CapabilityEngine(
     private val context: Context,
     private val settingsBridge: SettingsBridge
 ) {
+    private val shizuku = ShizukuBackend(context)
 
     fun snapshot(): CapabilitySnapshot {
         val caps = listOf(
@@ -30,10 +25,13 @@ class CapabilityEngine(
         return CapabilitySnapshot(caps, selected, reason)
     }
 
+    fun shizukuStatus(): ShizukuStatus = shizuku.status()
+
+    fun requestShizukuPermission() = shizuku.requestPermission()
+
     private fun detectRoot(): BackendCapability {
         val su = listOf("/system/xbin/su", "/system/bin/su")
             .firstOrNull { java.io.File(it).canExecute() }
-
         return BackendCapability(
             backend = BackendType.ROOT,
             installed = su != null,
@@ -48,25 +46,17 @@ class CapabilityEngine(
     }
 
     private fun detectShizuku(): BackendCapability {
-        val installed = runCatching {
-            context.packageManager.getPackageInfo("moe.shizuku.privileged.api", 0)
-            true
-        }.getOrDefault(false)
-
-        // V0.5 deliberately avoids claiming authorization without the actual Shizuku API.
+        val s = shizuku.status()
         return BackendCapability(
             backend = BackendType.SHIZUKU,
-            installed = installed,
-            available = false,
-            authorized = false,
-            canFreeze = false,
-            canDisable = false,
-            canPackageOps = false,
+            installed = s.installed,
+            available = s.running,
+            authorized = s.permissionGranted,
+            canFreeze = s.usable,
+            canDisable = s.usable,
+            canPackageOps = s.usable,
             canMount = false,
-            detail = if (installed)
-                "Shizuku package detected; API authorization check is pending."
-            else
-                "Shizuku package not detected."
+            detail = s.detail + (s.uid?.let { " UID=$it." } ?: "")
         )
     }
 
@@ -75,7 +65,6 @@ class CapabilityEngine(
             context.packageManager.getPackageInfo("com.oasisfeng.island", 0)
             true
         }.getOrDefault(false)
-
         return BackendCapability(
             backend = BackendType.ISLAND,
             installed = installed,
@@ -85,15 +74,13 @@ class CapabilityEngine(
             canDisable = false,
             canPackageOps = false,
             canMount = false,
-            detail = if (installed)
-                "Island detected; API connection check is pending."
-            else
-                "Island not detected."
+            detail = if (installed) "Island detected; API connection check is pending."
+            else "Island not detected."
         )
     }
 
-    private fun detectAndroid(): BackendCapability {
-        return BackendCapability(
+    private fun detectAndroid(): BackendCapability =
+        BackendCapability(
             backend = BackendType.ANDROID,
             installed = true,
             available = true,
@@ -104,5 +91,4 @@ class CapabilityEngine(
             canMount = false,
             detail = "Android framework operations only."
         )
-    }
 }
