@@ -17,12 +17,4 @@ class SettingsBridge(private val store: SettingsStore) {
     fun mountOptions(): String = current().mountOptions
     fun mountOrder(): Int = current().mountOrder
     fun excludedPaths(): String = current().excludedPaths
-
-    fun isSdDetectionEnabled() = current().sdDetection
-    fun isPartitionDetectionEnabled() = current().partitionDetection
-    fun isFilesystemDetectionEnabled() = current().filesystemDetection
-    fun isExt2Enabled() = current().ext2
-    fun isExt3Enabled() = current().ext3
-    fun isExt4Enabled() = current().ext4
-    fun isF2fsEnabled() = current().f2fs
 }

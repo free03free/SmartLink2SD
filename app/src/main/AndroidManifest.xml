@@ -11,6 +11,7 @@
         <activity android:name=".settings.AdvancedSettingsActivity" />
         <activity android:name=".settings.PermissionCenterActivity" />
         <activity android:name=".ui.AppDetailsActivity" />
+        <activity android:name=".storage.StorageManagerActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

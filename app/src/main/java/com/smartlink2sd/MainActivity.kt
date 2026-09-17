@@ -27,6 +27,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, com.smartlink2sd.settings.PermissionCenterActivity::class.java))
         }
 
+        findViewById<android.widget.Button>(R.id.storageButton).setOnClickListener {
+            startActivity(Intent(this, com.smartlink2sd.storage.StorageManagerActivity::class.java))
+        }
+
         adapter = AppListAdapter(
             emptyList(),
             onClick = { app ->
